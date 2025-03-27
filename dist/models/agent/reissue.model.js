@@ -16,47 +16,13 @@ const commonTypes_1 = require("../../common/types/commonTypes");
 const schema_1 = __importDefault(require("../../utils/miscellaneous/schema"));
 const common_helper_1 = require("../../common/helpers/common.helper");
 const config_1 = __importDefault(require("../../config/config"));
-class AgentDashboardModel extends schema_1.default {
+class ReissueModel extends schema_1.default {
     constructor(db, db2) {
         super();
         //hello world
         this.insertAccVoucher = (payload) => __awaiter(this, void 0, void 0, function* () {
             const [id] = yield this.db2('acc_voucher').insert(payload);
             return id;
-        });
-        this.getHeadByAccount = (accountId) => __awaiter(this, void 0, void 0, function* () {
-            return yield this.db2('trabill_accounts')
-                .withSchema(this.DOUBLE)
-                .select('*');
-        });
-        this.getAccountName = (accountName) => __awaiter(this, void 0, void 0, function* () {
-            return yield this.db2('trabill_accounts')
-                .withSchema(this.DOUBLE)
-                .select('*')
-                .where('account_org_agency', 154)
-                .andWhere('account_name', accountName);
-        });
-        this.insertReceipt = (payload) => __awaiter(this, void 0, void 0, function* () {
-            const [id] = yield this.db('trabill_receipts').insert(payload);
-            return id;
-        });
-        this.getInvoiceWiseDue = (clientId, combinedId) => __awaiter(this, void 0, void 0, function* () {
-            const data = (yield this.db('v_invoice_wise_receipt')
-                .select('*')
-                .where('invoice_org_agency', 154)
-                .andWhere('due_amount', '>', '0')
-                .modify((e) => {
-                if (clientId)
-                    e.where('invoice_client_id', clientId);
-                if (combinedId)
-                    e.where('invoice_combined_id', combinedId);
-            }));
-            return data;
-        });
-        this.insertReceiptItems = (payload) => __awaiter(this, void 0, void 0, function* () {
-            if (payload.length) {
-                yield this.db('trabill_receipt_items').insert(payload);
-            }
         });
         this.insertAccVoucherDb = (body) => __awaiter(this, void 0, void 0, function* () {
             const { serial_no, acc_head_id, voucher_no, amount, trans_type, description, payment_type, payment_method, bank_name, } = body;
@@ -182,27 +148,6 @@ class AgentDashboardModel extends schema_1.default {
         });
         this.updateVoucher = (voucher_type) => __awaiter(this, void 0, void 0, function* () {
             yield this.db.raw(`call ${config_1.default.DB_NAME2}.updateVoucherNumber('${voucher_type}', 154)`);
-        });
-        this.getLastHeadCodeByParent = (id) => __awaiter(this, void 0, void 0, function* () {
-            const data = (yield this.db2('acc_head')
-                .withSchema(this.DOUBLE)
-                .select('head_code')
-                .where('head_parent_id', id)
-                .orderBy('head_id', 'desc')
-                .limit(1)
-                .first());
-            return data === null || data === void 0 ? void 0 : data.head_code;
-        });
-        this.insertAccount = (body) => __awaiter(this, void 0, void 0, function* () {
-            return yield this.db2('trabill_accounts')
-                .withSchema(this.DOUBLE)
-                .insert(body);
-        });
-        this.insertAccHead = (payload) => __awaiter(this, void 0, void 0, function* () {
-            const [id] = yield this.db2('acc_head')
-                .withSchema(this.DOUBLE)
-                .insert(payload);
-            return id;
         });
         this.db = db;
         this.db2 = db2;
@@ -343,53 +288,9 @@ class AgentDashboardModel extends schema_1.default {
                 .insert(transformedClient);
         });
     }
+    //   147852369789
+    //   852369741
     // invoice latest points
-    singleEntryInvoices() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.db('trabill_invoices')
-                .withSchema(this.SINGLE)
-                .select('*')
-                .where({
-                invoice_org_agency: 76,
-                invoice_category_id: 1,
-                // invoice_is_reissued: 0,
-                // invoice_is_cancel: 0,
-                // invoice_is_refund: 0,
-                invoice_is_deleted: 0,
-                // invoice_is_void: 0,
-            });
-        });
-    }
-    singleEntryInvoicesRefund() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.db('trabill_invoices')
-                .withSchema('trabill_iata_single_entry_2025')
-                .select('*')
-                .where({
-                invoice_org_agency: 76,
-                invoice_category_id: 1,
-                invoice_is_refund: 1,
-                invoice_is_deleted: 0,
-            });
-        });
-    }
-    singleEntryInvoicesRefundCount() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.db('trabill_invoices')
-                .withSchema(this.SINGLE)
-                .count('* as count') // Count all rows that match the criteria
-                .where({
-                invoice_org_agency: 76,
-                invoice_category_id: 1,
-                invoice_is_reissued: 0,
-                invoice_is_cancel: 0,
-                invoice_is_refund: 1,
-                invoice_is_deleted: 0,
-                invoice_is_void: 0,
-            })
-                .then((result) => result[0].count); // Extract the count from the result
-        });
-    }
     singleEntryInvoicesReissue() {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield this.db('trabill_invoices')
@@ -418,6 +319,49 @@ class AgentDashboardModel extends schema_1.default {
             };
         });
     }
+    singleEntryInvoicesRefund() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.db('trabill_invoices')
+                .withSchema('trabill_iata_single_entry_2025')
+                .select('*')
+                .where({
+                invoice_org_agency: 76,
+                invoice_category_id: 1,
+                invoice_is_refund: 1,
+            });
+        });
+    }
+    singleEntryInvoicesRefundCount() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.db('trabill_invoices')
+                .withSchema(this.SINGLE)
+                .count('* as count') // Count all rows that match the criteria
+                .where({
+                invoice_org_agency: 76,
+                invoice_category_id: 1,
+                invoice_is_reissued: 0,
+                invoice_is_cancel: 0,
+                invoice_is_refund: 1,
+                invoice_is_deleted: 0,
+                invoice_is_void: 0,
+            })
+                .then((result) => result[0].count); // Extract the count from the result
+        });
+    }
+    // public async singleEntryInvoicesReissue() {
+    //   return await this.db('trabill_invoices')
+    //     .withSchema(this.SINGLE)
+    //     .select('*')
+    //     .where({
+    //       invoice_org_agency: 76,
+    //       invoice_category_id: 1,
+    //       invoice_is_reissued: 1,
+    //       invoice_is_cancel: 0,
+    //       invoice_is_refund: 0,
+    //       invoice_is_deleted: 0,
+    //       invoice_is_void: 0,
+    //     });
+    // }
     singleEntryInvoicesVoid() {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.db('trabill_invoices')
@@ -468,19 +412,55 @@ class AgentDashboardModel extends schema_1.default {
     }
     singleEntryInvoicesAirTicketItems(invoice_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.db('trabill_invoice_airticket_items')
+            return yield this.db('trabill_invoice_noncom_airticket_items')
                 .withSchema(this.SINGLE)
                 .select('*')
                 .where('airticket_org_agency', 76)
                 .andWhere('airticket_invoice_id', invoice_id)
-                .andWhere('airticket_is_deleted', 0);
-            // .andWhere('airticket_ticket_type', 'NEW TKT');
-            // .andWhere('airticket_is_reissued', 0)
-            // .andWhere('airticket_is_refund', 0)
-            // .andWhere('airticket_is_void', 0)
+                .andWhere('airticket_is_deleted', 0)
+                // .andWhere('airticket_ticket_type', 'NEW TKT');
+                .andWhere('airticket_is_reissued', 0)
+                .andWhere('airticket_is_refund', 0)
+                .andWhere('airticket_is_void', 0);
             // .andWhere('airticket_is_deleted', 0);
         });
     }
+    singleEntryInvoicesAirTicketItemsReissue(invoice_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.db('trabill_invoice_reissue_airticket_items_view')
+                .withSchema('trabill_iata_single_entry_2025')
+                .select('*')
+                .where('airticket_org_agency', 76)
+                .andWhere('airticket_existing_invoiceid', invoice_id)
+                .andWhere('airticket_is_deleted', 0);
+            // .andWhere('airticket_ticket_type', 'NEW TKT');
+        });
+    }
+    /* update ******************************** */
+    updateIsReissued(invoiceId, airticketId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const categoryId = (yield this.db2('trabill_invoices')
+                .select('invoice_category_id')
+                .where('invoice_id', invoiceId)
+                .first());
+            if ((categoryId === null || categoryId === void 0 ? void 0 : categoryId.invoice_category_id) == 1) {
+                yield this.db2('trabill_invoice_airticket_items')
+                    .update('airticket_is_reissued', 1)
+                    .where('airticket_id', airticketId);
+            }
+            else if ((categoryId === null || categoryId === void 0 ? void 0 : categoryId.invoice_category_id) == 2) {
+                yield this.db2('trabill_invoice_noncom_airticket_items')
+                    .update('airticket_is_reissued', 1)
+                    .where('airticket_id', airticketId);
+            }
+            else if ((categoryId === null || categoryId === void 0 ? void 0 : categoryId.invoice_category_id) == 3) {
+                yield this.db2('trabill_invoice_reissue_airticket_items')
+                    .update('airticket_is_reissued', 1)
+                    .where('airticket_id', airticketId);
+            }
+        });
+    }
+    /* update ******************************** */
     singleEntryInvoicesAirTicketItemsRefund(invoice_id) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.db('trabill_invoice_airticket_items')
@@ -495,6 +475,23 @@ class AgentDashboardModel extends schema_1.default {
                 .andWhere('airticket_is_deleted', 0);
         });
     }
+    //hello world
+    singleEntryInvoices() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.db('trabill_invoices')
+                .withSchema(this.SINGLE)
+                .select('*')
+                .where({
+                invoice_org_agency: 76,
+                invoice_category_id: 2,
+                // invoice_is_reissued: 0,
+                // invoice_is_cancel: 0,
+                // invoice_is_refund: 0,
+                // invoice_is_deleted: 0,
+                // invoice_is_void: 0,
+            });
+        });
+    }
     //insert invoice
     insertInvoicesInfo(payload) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -504,29 +501,14 @@ class AgentDashboardModel extends schema_1.default {
     }
     insertAirTicketItem(payload) {
         return __awaiter(this, void 0, void 0, function* () {
-            const [airticket_id] = yield this.db2('trabill_invoice_airticket_items').insert(payload);
+            const [airticket_id] = yield this.db2('trabill_invoice_noncom_airticket_items').insert(payload);
             return airticket_id;
-        });
-    }
-    insertAirTicketReissueItem(payload) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const [id] = yield this.db2('trabill_invoice_reissue_airticket_items').insert(payload);
-            return id;
-        });
-    }
-    insertCheque(data) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const [id] = yield this.db('cheques').insert(data);
-            return id;
         });
     }
     refreshDatabase() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.db2('acc_voucher').where('org_id', 154).delete();
             yield this.db2('trabill_invoice_airticket_items')
-                .where('airticket_org_agency', 154)
-                .delete();
-            yield this.db2('trabill_invoice_noncom_airticket_items')
                 .where('airticket_org_agency', 154)
                 .delete();
             yield this.db2('vendor_trxn').where('vtrxn_agency_id', 154).delete();
@@ -640,12 +622,20 @@ class AgentDashboardModel extends schema_1.default {
                 .first();
         });
     }
+    // public async getTicketInfoByNumber(airticketNo: string) {
+    //   return await this.db2('trabill_invoice_airticket_items')
+    //     .withSchema(this.DOUBLE)
+    //     .select('*')
+    //     .where('airticket_org_agency', 154)
+    //     .andWhere('airticket_ticket_no', airticketNo)
+    //     .first();
+    // }
     getTicketInfoByNumber(airticketNo) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.db2('trabill_invoice_airticket_items')
                 .withSchema(this.DOUBLE)
                 .select('*')
-                .where('airticket_org_agency', 154)
+                .where('airticket_org_agency', 154) // Extra condition
                 .andWhere('airticket_ticket_no', airticketNo)
                 .first();
         });
@@ -669,15 +659,5 @@ class AgentDashboardModel extends schema_1.default {
                 .where({ vrefund_refund_id: vrefund_refund_id });
         });
     }
-    //accounts
-    getSingleEntryAccounts() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.db('trabill_accounts')
-                .withSchema(this.SINGLE)
-                .select('*')
-                .where({ account_org_agency: 76 })
-                .andWhere('account_is_deleted', 0);
-        });
-    }
 }
-exports.default = AgentDashboardModel;
+exports.default = ReissueModel;

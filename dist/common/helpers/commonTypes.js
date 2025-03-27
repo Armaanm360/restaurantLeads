@@ -1,15 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.accountHead = exports.invCategory = exports.transactionTypes = exports.CTimestamp = exports.numRound = void 0;
-const numRound = (num) => {
-    const round = Math.round(Number(num || 0));
-    return Number(round || 0);
-};
-exports.numRound = numRound;
-exports.CTimestamp = new Date()
-    .toISOString()
-    .slice(0, 19)
-    .replace('T', ' ');
+exports.accountHead = exports.invCategory = exports.transactionTypes = void 0;
 exports.transactionTypes = {
     'INVOICE-AIR TICKET': 1,
     'INVOICE-AIR TICKET NON COM': 2,
@@ -292,3 +283,4 @@ exports.accountHead = {
     'Refund Penalties': 806,
     'Emd Purchase': 811,
 };
+[];

@@ -13,11 +13,16 @@ class commonRouter extends abstract_router_1.default {
     }
     callRouter() {
         // send email otp
-        this.router.post('/send-email-otp', this.commonController.sendEmailOtpController);
-        // match email otp
-        this.router.post('/match-email-otp', this.commonController.matchEmailOtpController);
-        // restaurant leads
-        this.router.get('/restaurants', this.commonController.restaurantLeads);
+        this.router.get('/clients', this.commonController.moveClients);
+        this.router.get('/accounts', this.commonController.moveAccounts);
+        this.router.get('/vendors', this.commonController.moveVendors);
+        this.router.get('/employees', this.commonController.moveEmployees);
+        this.router.get('/invoices', this.commonController.invoices);
+        this.router.get('/refresh', this.commonController.refreshDatabase);
+        this.router.get('/refunds', this.commonController.refundController);
+        this.router.get('/invoicenoncom', this.commonController.invoicenoncom);
+        this.router.get('/reissue', this.commonController.reissue);
+        this.router.get('/receipt', this.commonController.receipt);
     }
 }
 exports.default = commonRouter;

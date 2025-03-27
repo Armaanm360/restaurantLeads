@@ -70,29 +70,26 @@ class Lib {
     emailSub: string,
     emailBody: string
   ) {
-    try {
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: config.EMAIL_SEND_EMAIL_ID,
-          pass: config.EMAIL_SEND_PASSWORD,
-        },
-      });
-
-      const info = await transporter.sendMail({
-        from: config.EMAIL_SEND_EMAIL_ID,
-        to: email,
-        subject: emailSub,
-        html: emailBody,
-      });
-
-      console.log('Message send: %s', info);
-
-      return true;
-    } catch (err: any) {
-      console.log({ err });
-      return false;
-    }
+    // try {
+    //   const transporter = nodemailer.createTransport({
+    //     service: 'gmail',
+    //     auth: {
+    //       user: config.EMAIL_SEND_EMAIL_ID,
+    //       pass: config.EMAIL_SEND_PASSWORD,
+    //     },
+    //   });
+    //   const info = await transporter.sendMail({
+    //     from: config.EMAIL_SEND_EMAIL_ID,
+    //     to: email,
+    //     subject: emailSub,
+    //     html: emailBody,
+    //   });
+    //   console.log('Message send: %s', info);
+    //   return true;
+    // } catch (err: any) {
+    //   console.log({ err });
+    //   return false;
+    // }
   }
 
   // getnerate email otp html

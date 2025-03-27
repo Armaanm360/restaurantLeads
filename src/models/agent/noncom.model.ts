@@ -14,7 +14,7 @@ import {
 } from '../../common/helpers/commonTypes';
 import config from '../../config/config';
 
-class AgentDashboardModel extends Schema {
+class NonComModel extends Schema {
   private db: TDB;
   private db2: TDB2;
 
@@ -143,11 +143,11 @@ class AgentDashboardModel extends Schema {
       .select('*')
       .where({
         invoice_org_agency: 76,
-        invoice_category_id: 1,
+        invoice_category_id: 2,
         // invoice_is_reissued: 0,
         // invoice_is_cancel: 0,
         // invoice_is_refund: 0,
-        invoice_is_deleted: 0,
+        // invoice_is_deleted: 0,
         // invoice_is_void: 0,
       });
   }
@@ -160,7 +160,6 @@ class AgentDashboardModel extends Schema {
         invoice_org_agency: 76,
         invoice_category_id: 1,
         invoice_is_refund: 1,
-        invoice_is_deleted: 0,
       });
   }
 
@@ -181,32 +180,18 @@ class AgentDashboardModel extends Schema {
   }
 
   public async singleEntryInvoicesReissue() {
-    const data = await this.db('trabill_invoices')
+    return await this.db('trabill_invoices')
       .withSchema(this.SINGLE)
       .select('*')
       .where({
         invoice_org_agency: 76,
         invoice_category_id: 1,
         invoice_is_reissued: 1,
+        invoice_is_cancel: 0,
+        invoice_is_refund: 0,
         invoice_is_deleted: 0,
+        invoice_is_void: 0,
       });
-
-    const total = await this.db('trabill_invoices')
-      .withSchema(this.SINGLE)
-      .count('* as count')
-      .where({
-        invoice_org_agency: 76,
-        invoice_category_id: 1,
-        invoice_is_reissued: 1,
-        invoice_is_deleted: 0,
-      })
-      .first()
-      .then((result: any) => result.count);
-
-    return {
-      data,
-      total,
-    };
   }
 
   public async singleEntryInvoicesVoid() {
@@ -255,16 +240,16 @@ class AgentDashboardModel extends Schema {
   }
 
   public async singleEntryInvoicesAirTicketItems(invoice_id: number) {
-    return await this.db('trabill_invoice_airticket_items')
+    return await this.db('trabill_invoice_noncom_airticket_items')
       .withSchema(this.SINGLE)
       .select('*')
       .where('airticket_org_agency', 76)
       .andWhere('airticket_invoice_id', invoice_id)
-      .andWhere('airticket_is_deleted', 0);
-    // .andWhere('airticket_ticket_type', 'NEW TKT');
-    // .andWhere('airticket_is_reissued', 0)
-    // .andWhere('airticket_is_refund', 0)
-    // .andWhere('airticket_is_void', 0)
+      .andWhere('airticket_is_deleted', 0)
+      // .andWhere('airticket_ticket_type', 'NEW TKT');
+      .andWhere('airticket_is_reissued', 0)
+      .andWhere('airticket_is_refund', 0)
+      .andWhere('airticket_is_void', 0);
     // .andWhere('airticket_is_deleted', 0);
   }
   public async singleEntryInvoicesAirTicketItemsRefund(invoice_id: number) {
@@ -288,17 +273,10 @@ class AgentDashboardModel extends Schema {
 
   public async insertAirTicketItem(payload: any) {
     const [airticket_id] = await this.db2(
-      'trabill_invoice_airticket_items'
+      'trabill_invoice_noncom_airticket_items'
     ).insert(payload);
 
     return airticket_id as number;
-  }
-  public async insertAirTicketReissueItem(payload: any) {
-    const [id] = await this.db2(
-      'trabill_invoice_reissue_airticket_items'
-    ).insert(payload);
-
-    return id as number;
   }
 
   //hello world
@@ -307,57 +285,6 @@ class AgentDashboardModel extends Schema {
 
     return id;
   };
-
-  getHeadByAccount = async (accountId: number) => {
-    return await this.db2('trabill_accounts')
-      .withSchema(this.DOUBLE)
-      .select('*');
-  };
-
-  getAccountName = async (accountName: number) => {
-    return await this.db2('trabill_accounts')
-      .withSchema(this.DOUBLE)
-      .select('*')
-      .where('account_org_agency', 154)
-      .andWhere('account_name', accountName);
-  };
-
-  public insertReceipt = async (payload: any) => {
-    const [id] = await this.db('trabill_receipts').insert(payload);
-
-    return id;
-  };
-
-  getInvoiceWiseDue = async (
-    clientId: number | null,
-    combinedId: number | null
-  ) => {
-    const data = (await this.db('v_invoice_wise_receipt')
-      .select('*')
-      .where('invoice_org_agency', 154)
-      .andWhere('due_amount', '>', '0')
-      .modify((e) => {
-        if (clientId) e.where('invoice_client_id', clientId);
-        if (combinedId) e.where('invoice_combined_id', combinedId);
-      })) as {
-      invoice_id: number;
-      due_amount: string;
-    }[];
-
-    return data;
-  };
-
-  public insertReceiptItems = async (payload: any[]) => {
-    if (payload.length) {
-      await this.db('trabill_receipt_items').insert(payload);
-    }
-  };
-
-  public async insertCheque(data: any) {
-    const [id] = await this.db('cheques').insert(data);
-
-    return id;
-  }
 
   public insertAccVoucherDb = async (body: any) => {
     const {
@@ -534,9 +461,6 @@ class AgentDashboardModel extends Schema {
   public async refreshDatabase() {
     await this.db2('acc_voucher').where('org_id', 154).delete();
     await this.db2('trabill_invoice_airticket_items')
-      .where('airticket_org_agency', 154)
-      .delete();
-    await this.db2('trabill_invoice_noncom_airticket_items')
       .where('airticket_org_agency', 154)
       .delete();
     await this.db2('vendor_trxn').where('vtrxn_agency_id', 154).delete();
@@ -756,41 +680,6 @@ class AgentDashboardModel extends Schema {
       .select('*')
       .where({ vrefund_refund_id: vrefund_refund_id });
   }
-
-  //accounts
-
-  public async getSingleEntryAccounts() {
-    return await this.db('trabill_accounts')
-      .withSchema(this.SINGLE)
-      .select('*')
-      .where({ account_org_agency: 76 })
-      .andWhere('account_is_deleted', 0);
-  }
-
-  getLastHeadCodeByParent = async (id: number) => {
-    const data = (await this.db2('acc_head')
-      .withSchema(this.DOUBLE)
-      .select('head_code')
-      .where('head_parent_id', id)
-      .orderBy('head_id', 'desc')
-      .limit(1)
-      .first()) as { head_code: string };
-
-    return data?.head_code;
-  };
-
-  insertAccount = async (body: any) => {
-    return await this.db2('trabill_accounts')
-      .withSchema(this.DOUBLE)
-      .insert(body);
-  };
-
-  insertAccHead = async (payload: any | any[]) => {
-    const [id] = await this.db2('acc_head')
-      .withSchema(this.DOUBLE)
-      .insert(payload);
-    return id;
-  };
 }
 
-export default AgentDashboardModel;
+export default NonComModel;
