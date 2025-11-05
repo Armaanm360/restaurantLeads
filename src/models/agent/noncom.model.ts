@@ -137,6 +137,40 @@ class NonComModel extends Schema {
 
   // invoice latest points
 
+  // public async singleEntryInvoices() {
+  //   return await this.db('trabill_invoices')
+  //     .withSchema(this.SINGLE)
+  //     .select('*')
+  //     .where({
+  //       invoice_org_agency: 76,
+  //       invoice_category_id: 2,
+  //       invoice_is_cancel: 0,
+  //       invoice_is_deleted: 0,
+  //     })
+  //     .andWhere(function () {
+  //       this.where({
+  //         invoice_is_void: 0,
+  //         invoice_is_refund: 0,
+  //         invoice_is_reissued: 1,
+  //       })
+  //         .orWhere({
+  //           invoice_is_void: 1,
+  //           invoice_is_refund: 0,
+  //           invoice_is_reissued: 1,
+  //         })
+  //         .orWhere({
+  //           invoice_is_void: 0,
+  //           invoice_is_refund: 1,
+  //           invoice_is_reissued: 1,
+  //         })
+  //         .orWhere({
+  //           invoice_is_void: 1,
+  //           invoice_is_refund: 1,
+  //           invoice_is_reissued: 1,
+  //         });
+  //     });
+  // }
+
   public async singleEntryInvoices() {
     return await this.db('trabill_invoices')
       .withSchema(this.SINGLE)
@@ -144,17 +178,13 @@ class NonComModel extends Schema {
       .where({
         invoice_org_agency: 76,
         invoice_category_id: 2,
-        // invoice_is_reissued: 0,
-        // invoice_is_cancel: 0,
-        // invoice_is_refund: 0,
-        // invoice_is_deleted: 0,
-        // invoice_is_void: 0,
-      });
+      })
+      .andWhere('invoice_is_deleted', 0);
   }
 
   public async singleEntryInvoicesRefund() {
     return await this.db('trabill_invoices')
-      .withSchema('trabill_iata_single_entry_2025')
+      .withSchema(this.SINGLE)
       .select('*')
       .where({
         invoice_org_agency: 76,
@@ -239,18 +269,51 @@ class NonComModel extends Schema {
       });
   }
 
+  // public async singleEntryInvoicesAirTicketItems(invoice_id: number) {
+  //   return await this.db('trabill_invoice_noncom_airticket_items')
+  //     .withSchema(this.SINGLE)
+  //     .select('*')
+  //     .where('airticket_org_agency', 76)
+  //     .andWhere('airticket_invoice_id', invoice_id)
+  //     .andWhere('airticket_is_deleted', 0)
+  //     // .andWhere('airticket_ticket_type', 'NEW TKT');
+  //     .andWhere('airticket_is_reissued', 0)
+  //     .andWhere('airticket_is_refund', 0)
+  //     .andWhere('airticket_is_void', 0);
+  //   // .andWhere('airticket_is_deleted', 0);
+  // }
   public async singleEntryInvoicesAirTicketItems(invoice_id: number) {
-    return await this.db('trabill_invoice_noncom_airticket_items')
+    return await this.db('trabill_invoice_noncom_airticket_items as tiai')
       .withSchema(this.SINGLE)
-      .select('*')
-      .where('airticket_org_agency', 76)
-      .andWhere('airticket_invoice_id', invoice_id)
-      .andWhere('airticket_is_deleted', 0)
-      // .andWhere('airticket_ticket_type', 'NEW TKT');
-      .andWhere('airticket_is_reissued', 0)
-      .andWhere('airticket_is_refund', 0)
-      .andWhere('airticket_is_void', 0);
-    // .andWhere('airticket_is_deleted', 0);
+      .select([
+        'tiai.*',
+        'tiar.airoute_airticket_id',
+        'tiar.airoute_invoice_id',
+        this.db.raw(
+          'GROUP_CONCAT(tap.airline_iata_code SEPARATOR " - ") as airticket_routes'
+        ),
+      ])
+      .leftJoin(
+        'trabill_invoice_airticket_routes as tiar',
+        'tiar.airoute_airticket_id',
+        'tiai.airticket_id'
+      )
+      .leftJoin(
+        'trabill_airports as tap',
+        'tap.airline_id',
+        'tiar.airoute_route_sector_id'
+      )
+      .where('tiai.airticket_org_agency', 76)
+      .andWhere('tiai.airticket_invoice_id', invoice_id)
+      .andWhere('tiai.airticket_is_deleted', 0)
+      .andWhere('tiar.airoute_is_deleted', 0)
+      .groupBy([
+        'tiar.airoute_invoice_id',
+        'tiar.airoute_airticket_id',
+        'tiai.airticket_id',
+        'tiai.airticket_ticket_type',
+        'tiai.airticket_sales_date',
+      ]);
   }
   public async singleEntryInvoicesAirTicketItemsRefund(invoice_id: number) {
     return await this.db('trabill_invoice_airticket_items')

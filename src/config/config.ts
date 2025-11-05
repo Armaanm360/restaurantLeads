@@ -19,6 +19,7 @@ interface ENV {
   AWS_S3_BUCKET: string | undefined;
   AWS_S3_ACCESS_KEY: string | undefined;
   AWS_S3_SECRET_KEY: string | undefined;
+  MISTRAL_API_KEY: string | undefined;
 }
 
 // Config types
@@ -36,6 +37,7 @@ interface Config {
   AWS_S3_BUCKET: string;
   AWS_S3_ACCESS_KEY: string;
   AWS_S3_SECRET_KEY: string;
+  MISTRAL_API_KEY: string;
 }
 
 // Loading process.env as  ENV interface
@@ -54,6 +56,7 @@ const getConfig = (): ENV => {
     AWS_S3_BUCKET: process.env.AWS_S3_BUCKET,
     AWS_S3_ACCESS_KEY: process.env.AWS_S3_ACCESS_KEY,
     AWS_S3_SECRET_KEY: process.env.AWS_S3_SECRET_KEY,
+    MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
   };
 };
 

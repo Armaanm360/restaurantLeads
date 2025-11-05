@@ -5,6 +5,7 @@ class StatusCode {
   static readonly HTTP_FULFILLED = 204;
   static readonly HTTP_BAD_REQUEST = 400;
   static readonly HTTP_UNAUTHORIZED = 401;
+  static readonly HTTP_PARTIAL_CONTENT = 206;
   static readonly HTTP_FORBIDDEN = 403;
   static readonly HTTP_NOT_FOUND = 404;
   static readonly HTTP_CONFLICT = 409;

@@ -547,6 +547,43 @@ export interface IRefundItem {
   vendor_name: string;
 }
 
+export interface UploadedFile {
+  name: string;
+  data: Buffer;
+  size: number;
+  encoding: string;
+  tempFilePath?: string;
+  truncated: boolean;
+  mimetype: string;
+  md5?: string;
+  mv: (path: string, callback?: (err?: any) => void) => Promise<void>;
+}
+export interface IPaymentDB {
+  agency_id: number;
+  voucher_no: string; // Max length 25
+  comb_vendor: string; // Max length 50
+  vendor_id: number | null;
+  combined_id: number | null;
+  vendor_trxn_id: number | null;
+  combined_trxn_id: number | null;
+  bsp_period: string; // Max length 50
+  payment_date: string; // Timestamp
+  payment_to: 'OVERALL' | 'TICKET'; // Enum type
+  payment_type: any; // TinyInt
+  payment_cheque_id: number | null;
+  transaction_no?: string; // Optional, Max length 100
+  account_id: number;
+  account_vou1: number | null;
+  account_vou2: number | null;
+  payment_by: number;
+  payment_total: number; // Decimal(10,2)
+  payment_note: string; // Optional, Text
+  bank_name: string; // Optional, Max length 100
+  cheque_number: string; // Optional, Max length 50
+  cheque_date: string; // Optional, Timestamp
+  withdraw_date: string; // Optional, Timestamp
+  created_by: number;
+}
 export interface IRefundItemDb extends Omit<IRefundItem, 'vendor_name'> {
   refund_id: number;
   sale_return_vou1: number;

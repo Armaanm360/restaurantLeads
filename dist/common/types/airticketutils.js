@@ -15,7 +15,7 @@ const commonTypes_1 = require("../helpers/commonTypes");
 const commonTypes_2 = require("./commonTypes");
 const airTicketPayloadFormatter = (body, //IAirTicketBody
 conn, invoice_id) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a;
     const { invoice_agent_commission, invoice_combclient_id, invoice_sales_date, invoice_sales_man_id, invoice_customer_name, invoice_show_discount, invoice_show_passport_details, invoice_show_prev_due, invoice_show_unit, invoice_note, invoice_agent_id, invoice_due_date, client_name, tickets, invoice_no, } = body;
     const { client_id, combined_id } = (0, common_helper_1.separateCombClientToId)(invoice_combclient_id);
     let invoice_sub_total = 0;
@@ -43,7 +43,7 @@ conn, invoice_id) => __awaiter(void 0, void 0, void 0, function* () {
             (0, commonTypes_2.numRound)(item.airticket_ut_charge) +
             (0, commonTypes_2.numRound)(item.airticket_e5_charge);
         const countryTaxAit = totalCountryTax * 0.003;
-        const airticket_ait = item.airticket_gross_fare * 0.003 + countryTaxAit;
+        const airticket_ait = Math.round(+item.airticket_gross_fare * 0.003 - countryTaxAit);
         const airticket_net_commission = (0, commonTypes_2.numRound)(tkt_commission) - airticket_ait + (taxesCommission || 0);
         const airticket_purchase_price = (0, commonTypes_2.numRound)(item === null || item === void 0 ? void 0 : item.airticket_gross_fare) - (0, commonTypes_2.numRound)(airticket_net_commission);
         const airticket_client_price = (0, commonTypes_2.numRound)(item.airticket_extra_fee) + // Extra fee
@@ -64,7 +64,7 @@ conn, invoice_id) => __awaiter(void 0, void 0, void 0, function* () {
             airticket_vendor_combine_id,
             airticket_remarks: item.airticket_remarks,
             airticket_airline_id: item.airticket_airline_id,
-            airticket_ticket_no: item.airticket_ticket_no,
+            airticket_ticket_no: item.ticket_no,
             airticket_pnr: item.airticket_pnr,
             airticket_classes: item.airticket_classes,
             airticket_gross_fare: item.airticket_gross_fare,
@@ -96,11 +96,14 @@ conn, invoice_id) => __awaiter(void 0, void 0, void 0, function* () {
             airticket_p8_charge: item.airticket_p8_charge,
             airticket_r9_charge: item.airticket_r9_charge,
             airticket_sales_date: invoice_sales_date,
-            airticket_ticket_type: item.airticket_ticket_type,
+            airticket_ticket_type: item.airticket_ticket_type || 'NEW TKT',
             airticket_journey_date: item.airticket_journey_date,
             airticket_return_date: item.airticket_return_date,
-            airticket_route_or_sector: (_b = item.airticket_route_or_sector) === null || _b === void 0 ? void 0 : _b.join(','),
+            airticket_route_or_sector: item.airticket_route_or_sector,
             airticket_vat: item === null || item === void 0 ? void 0 : item.airticket_vat,
+            airticket_is_reissued: item === null || item === void 0 ? void 0 : item.airticket_is_reissued,
+            airticket_is_refund: item === null || item === void 0 ? void 0 : item.airticket_is_refund,
+            airticket_is_void: item === null || item === void 0 ? void 0 : item.airticket_is_void,
         };
         const clTransPayload = {
             ctrxn_amount: airticket_client_price,
@@ -194,7 +197,6 @@ const airTicketNonCommissionPayloadFormatter = (body) => {
     let invoice_net_total = 0;
     let invoice_purchase_total = 0;
     const ticketsFormat = tickets.map((item) => {
-        var _a;
         const { combined_id: airticket_vendor_combine_id, vendor_id: airticket_vendor_id, } = (0, common_helper_1.separateCombClientToId)(item.airticket_comvendor);
         invoice_sub_total += (0, commonTypes_2.numRound)(item === null || item === void 0 ? void 0 : item.airticket_gross_fare);
         invoice_discount += (0, commonTypes_2.numRound)(item === null || item === void 0 ? void 0 : item.airticket_discount_total);
@@ -213,8 +215,11 @@ const airTicketNonCommissionPayloadFormatter = (body) => {
             airticket_airline_id: item.airticket_airline_id,
             airticket_ticket_no: item.airticket_ticket_no,
             airticket_pnr: item.airticket_pnr,
+            airticket_is_reissued: item === null || item === void 0 ? void 0 : item.airticket_is_reissued,
+            airticket_is_void: item === null || item === void 0 ? void 0 : item.airticket_is_void,
+            airticket_is_refund: item === null || item === void 0 ? void 0 : item.airticket_is_refund,
             airticket_classes: item.airticket_classes,
-            airticket_gross_fare: item.airticket_gross_fare,
+            // airticket_gross_fare: item.airticket_gross_fare,
             airticket_discount_total: item.airticket_discount_total,
             airticket_extra_fee: item.airticket_extra_fee,
             airticket_client_price: item.airticket_client_price,
@@ -226,7 +231,8 @@ const airTicketNonCommissionPayloadFormatter = (body) => {
             airticket_ticket_type: item.airticket_ticket_type,
             airticket_journey_date: item.airticket_journey_date,
             airticket_return_date: item.airticket_return_date,
-            airticket_route_or_sector: (_a = item.airticket_route_or_sector) === null || _a === void 0 ? void 0 : _a.join(','),
+            // airticket_route_or_sector: item.airticket_route_or_sector?.join(','),
+            airticket_route_or_sector: item.airticket_route_or_sector,
             airticket_pax_name: item.passport_name,
         };
         const clTransPayload = {
@@ -315,7 +321,6 @@ const invoiceReissueFormatter = (body) => {
     let invoice_purchase_total = 0;
     let invoice_total_profit = 0;
     const ticketsFormat = tickets.map((item) => {
-        var _a;
         const { combined_id: airticket_vendor_combine_id, vendor_id: airticket_vendor_id, } = (0, common_helper_1.separateCombClientToId)(item.airticket_comvendor);
         const tkt_commission = item.airticket_fare_difference *
             (item.airticket_commission_percent / 100);
@@ -326,8 +331,9 @@ const invoiceReissueFormatter = (body) => {
         const airTicketDetails = {
             airticket_id: item.airticket_id,
             airticket_is_deleted: item.isDeleted,
-            airticket_existing_invoice: item.existing_invoiceid,
-            airticket_existing_airticket_id: item.existing_airticket_id,
+            airticket_existing_invoice: item.double_entry_prev_invoice_id,
+            airticket_existing_airticket_id: item.double_entry_prev_airticket_id,
+            new_airticket_no: item.airticket_reissue_ticket_no,
             airticket_client_id: client_id,
             airticket_combined_id: combined_id,
             airticket_vendor_id,
@@ -342,6 +348,8 @@ const invoiceReissueFormatter = (body) => {
             airticket_ait: item.airticket_ait,
             airticket_tax_difference: item.airticket_tax_difference,
             airticket_commission_percent: item.airticket_commission_percent,
+            airticket_is_reissued: item.airticket_is_reissued,
+            airticket_is_void: item.airticket_is_void,
             airticket_commission_amount: (0, commonTypes_2.numRound)(tkt_commission),
             airticket_extra_fee: item.airticket_extra_fee,
             airticket_client_price: item.airticket_client_price,
@@ -351,7 +359,8 @@ const invoiceReissueFormatter = (body) => {
             airticket_sales_date: invoice_sales_date,
             airticket_journey_date: item.airticket_journey_date,
             airticket_return_date: item.airticket_return_date,
-            airticket_route_or_sector: (_a = item.airticket_route_or_sector) === null || _a === void 0 ? void 0 : _a.join(','),
+            // airticket_route_or_sector: item.airticket_routes?.join(','),
+            airticket_route_or_sector: item.airticket_route_or_sector,
         };
         const clTransPayload = {
             ctrxn_amount: Number(item.airticket_client_price),

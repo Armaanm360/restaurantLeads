@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReceiptOverallPaymentInvoice = exports.generateNextGroupCode = exports.formatDate = exports.toNum = exports.separateCombClientToId = void 0;
+exports.getPAymentReceiptOverallPaymentInvoice = exports.getReceiptOverallPaymentInvoice = exports.generateNextGroupCode = exports.formatDate = exports.toNum = exports.separateCombClientToId = void 0;
 const customEror_1 = __importDefault(require("../../utils/lib/customEror"));
 const separateCombClientToId = (comb_client) => {
     console.log('comb_client', comb_client);
@@ -105,3 +105,23 @@ const getReceiptOverallPaymentInvoice = (total_due, receipt_total, receipt_id, u
     return { payment_total, inv_history };
 };
 exports.getReceiptOverallPaymentInvoice = getReceiptOverallPaymentInvoice;
+const getPAymentReceiptOverallPaymentInvoice = (total_due, receipt_total, payment_id) => {
+    let total_payment = receipt_total;
+    const payment_total = [];
+    for (let i = 0; i < total_due.length; i++) {
+        if (total_payment === 0)
+            break;
+        const dueInvoice = total_due[i];
+        const dueAmount = parseFloat(dueInvoice.due_amount);
+        let paymentAmount = Math.min(dueAmount, total_payment);
+        payment_total.push({
+            payment_amount: paymentAmount,
+            invoice_id: dueInvoice.airticket_invoice_id,
+            airticket_id: dueInvoice.airticket_id,
+            payment_id,
+        });
+        total_payment -= paymentAmount;
+    }
+    return payment_total;
+};
+exports.getPAymentReceiptOverallPaymentInvoice = getPAymentReceiptOverallPaymentInvoice;

@@ -624,6 +624,7 @@ export interface Ticket {
   isDeleted?: number;
   existing_airticket_id: number;
   existing_invoiceid: number;
+  new_airticket_no: number;
   airticket_ticket_no: string;
   airticket_penalties: number;
   airticket_fare_difference: number;
@@ -647,6 +648,7 @@ export interface Ticket {
 }
 export interface IReissueTicketItem {
   airticket_id?: number;
+  new_airticket_no?: any;
   airticket_is_deleted?: number;
   airticket_existing_invoice: number;
   airticket_existing_airticket_id: number;
@@ -675,6 +677,9 @@ export interface IReissueTicketItem {
   airticket_journey_date: string;
   airticket_return_date: string;
   airticket_route_or_sector: string;
+  airticket_is_refund?: any;
+  airticket_is_reissued?: any;
+  airticket_is_void?: any;
 }
 
 export interface IFlightDetail {
@@ -852,6 +857,7 @@ export const accountHead = {
   'Preferred Share(Owner’s Equity)': 44,
   'Treasury Share(Owner’s Equity)': 45,
   'Drawings(Owner’s Equity)': 46,
+  'Opening Balance Difference A/c': 46,
   Income: 47,
   'Sales(Income)': 48,
   '(-) Sales Return(Income)': 49,
@@ -860,6 +866,7 @@ export const accountHead = {
   'Refund Charge': 807,
   'Emd Sales': 810,
   'Emd Charge': 812,
+  'Sales/Service Income': 1529,
   Debit: 47,
   'ss(Income)': 48,
   '(-) s Return(Income)': 49,

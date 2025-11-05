@@ -29,6 +29,14 @@ abstract class AbstractServices {
     return voucher as string;
   };
 
+  protected superVoucher = async (req: Request, type: VoucherType) => {
+    const agency_id = 154; // অথবা req থেকে dynamic
+    const [[[voucher]]] = await this.db.raw(
+      `CALL trabill_double_entry.sp_generate_voucher('${type}', ${agency_id})`
+    );
+    return voucher.voucher_number;
+  };
+
   protected updateVoucher = async (req: Request, type: VoucherType) => {
     const conn = this.Model.agentDashboardModel();
 

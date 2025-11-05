@@ -33,6 +33,11 @@ class AbstractServices {
             const voucher = yield conn.generateVoucher(type);
             return voucher;
         });
+        this.superVoucher = (req, type) => __awaiter(this, void 0, void 0, function* () {
+            const agency_id = 154; // অথবা req থেকে dynamic
+            const [[[voucher]]] = yield this.db.raw(`CALL trabill_double_entry.sp_generate_voucher('${type}', ${agency_id})`);
+            return voucher.voucher_number;
+        });
         this.updateVoucher = (req, type) => __awaiter(this, void 0, void 0, function* () {
             const conn = this.Model.agentDashboardModel();
             yield conn.updateVoucher(type);

@@ -137,3 +137,37 @@ export const getReceiptOverallPaymentInvoice = (
 
   return { payment_total, inv_history };
 };
+
+export const getPAymentReceiptOverallPaymentInvoice = (
+  total_due: {
+    airticket_invoice_id: number;
+    due_amount: string;
+    airticket_id: number;
+  }[],
+  receipt_total: number,
+  payment_id: number
+) => {
+  let total_payment = receipt_total;
+
+  const payment_total: any[] = [];
+
+  for (let i = 0; i < total_due.length; i++) {
+    if (total_payment === 0) break;
+
+    const dueInvoice = total_due[i];
+    const dueAmount = parseFloat(dueInvoice.due_amount);
+
+    let paymentAmount = Math.min(dueAmount, total_payment);
+
+    payment_total.push({
+      payment_amount: paymentAmount,
+      invoice_id: dueInvoice.airticket_invoice_id,
+      airticket_id: dueInvoice.airticket_id,
+      payment_id,
+    });
+
+    total_payment -= paymentAmount;
+  }
+
+  return payment_total;
+};

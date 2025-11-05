@@ -148,12 +148,13 @@ class ReceiptModel extends Schema {
         receipt_has_deleted: 0,
       })
       .whereNotNull('receipt_account_id'); // 1
-    //   .whereNull('receipt_account_id'); // 2
+    // .whereNull('receipt_account_id') // 2
+    // .limit(5); // Added limit to retrieve only 5 records
   }
   //receiept items freak
   public async singleReceiptItems(receipt_id: number) {
     return await this.db('trabill_invoice_client_payments')
-      .withSchema('trabill_iata_single_entry_2025')
+      .withSchema(this.SINGLE)
       .select('*')
       .andWhere('invclientpayment_moneyreceipt_id', receipt_id)
       .andWhere('invclientpayment_is_deleted', 0);
@@ -192,7 +193,7 @@ class ReceiptModel extends Schema {
 
   public async singleEntryInvoicesRefund() {
     return await this.db('trabill_invoices')
-      .withSchema('trabill_iata_single_entry_2025')
+      .withSchema(this.SINGLE)
       .select('*')
       .where({
         invoice_org_agency: 76,
@@ -292,7 +293,7 @@ class ReceiptModel extends Schema {
   }
   public async singleEntryInvoicesAirTicketItemsReissue(invoice_id: number) {
     return await this.db('trabill_invoice_reissue_airticket_items_view')
-      .withSchema('trabill_iata_single_entry_2025')
+      .withSchema(this.SINGLE)
       .select('*')
       .where('airticket_org_agency', 76)
       .andWhere('airticket_existing_invoiceid', invoice_id)
@@ -777,6 +778,55 @@ class ReceiptModel extends Schema {
       .withSchema(this.SINGLE)
       .select('*')
       .where({ vrefund_refund_id: vrefund_refund_id });
+  }
+
+  /* vendor payment */
+
+  public async vendorPayment() {
+    return await this.db('trabill_vendor_payments')
+      .withSchema(this.SINGLE)
+      .select('*')
+      .where({
+        vpay_org_agency: 76,
+        vpay_is_deleted: 0,
+      })
+      .whereNotNull('vpay_payment_to')
+      .whereNotNull('vpay_account_id'); // 1
+  }
+
+  // public async vendorPayment() {
+  //   const data = await this.db('trabill_vendor_payments')
+  //     .withSchema(this.SINGLE)
+  //     .select('*')
+  //     .where({
+  //       vpay_org_agency: 76,
+  //       vpay_is_deleted: 0,
+  //     })
+  //     .whereNotNull('vpay_payment_to');
+
+  //   const total = await this.db('trabill_vendor_payments')
+  //     .withSchema(this.SINGLE)
+  //     .count('* as count')
+  //     .where({
+  //       vpay_org_agency: 76,
+  //       vpay_is_deleted: 0,
+  //     })
+  //     .whereNotNull('vpay_payment_to')
+  //     .first()
+  //     .then((result: any) => result.count);
+
+  //   return {
+  //     data,
+  //     total,
+  //   };
+  // }
+
+  public async singlePaymentItems(receipt_id: number) {
+    return await this.db('trabill_invoice_client_payments')
+      .withSchema(this.SINGLE)
+      .select('*')
+      .andWhere('invclientpayment_moneyreceipt_id', receipt_id)
+      .andWhere('invclientpayment_is_deleted', 0);
   }
 }
 

@@ -139,34 +139,144 @@ class ReissueModel extends Schema {
 
   // invoice latest points
 
+  // public async singleEntryInvoicesReissue() {
+  //   const data = await this.db('trabill_invoices')
+  //     .withSchema(this.SINGLE)
+  //     .select('*')
+  //     // .where({
+  //     //   invoice_org_agency: 76,
+  //     //   invoice_category_id: 3,
+  //     //   invoice_is_reissued: 0,
+  //     //   invoice_is_deleted: 0,
+  //     //   // invoice_is_void: 0,
+  //     // });
+  //     // .where({
+  //     //   invoice_org_agency: 76,
+  //     //   invoice_category_id: 3,
+  //     //   invoice_is_reissued: 0,
+  //     //   invoice_is_deleted: 0,
+  //     //   invoice_is_void: 1,
+  //     // });
+  //     // .where({
+  //     //   invoice_org_agency: 76,
+  //     //   invoice_category_id: 3,
+  //     //   invoice_is_reissued: 1,
+  //     //   invoice_is_deleted: 0,
+  //     //   invoice_is_refund: 0,
+  //     //   // invoice_is_void: 1,
+  //     // });
+  //     .where({
+  //       invoice_org_agency: 76,
+  //       invoice_category_id: 3,
+  //       invoice_is_reissued: 1,
+  //       invoice_is_deleted: 0,
+  //       invoice_is_refund: 1,
+  //       // invoice_is_void: 1,
+  //     });
+  //   // .limit(50);
+
+  //   const total = await this.db('trabill_invoices')
+  //     .withSchema(this.SINGLE)
+  //     .count('* as count')
+  //     .where({
+  //       invoice_org_agency: 76,
+  //       invoice_category_id: 3,
+  //       invoice_is_reissued: 0,
+  //       // invoice_is_void: 0,
+  //       // invoice_is_refund: 0,
+  //     })
+  //     .first()
+  //     .then((result: any) => result.count);
+
+  //   return {
+  //     data,
+  //     total,
+  //   };
+  // }
+
+  // public async singleEntryInvoicesReissue() {
+  //   const data = await this.db('trabill_invoices')
+  //     .withSchema(this.SINGLE)
+  //     .select('*')
+  //     .where({
+  //       invoice_org_agency: 76,
+  //       invoice_category_id: 3,
+  //       invoice_is_cancel: 0,
+  //       invoice_is_deleted: 0,
+  //     })
+  //     .andWhere(function () {
+  //       this.where({
+  //         invoice_is_void: 0,
+  //         invoice_is_refund: 0,
+  //       })
+  //         .orWhere({
+  //           invoice_is_void: 1,
+  //           invoice_is_refund: 0,
+  //         })
+  //         .orWhere({
+  //           invoice_is_void: 0,
+  //           invoice_is_refund: 1,
+  //         })
+  //         .orWhere({
+  //           invoice_is_void: 1,
+  //           invoice_is_refund: 1,
+  //         });
+  //     });
+
+  //   return { data };
+  // }
+
   public async singleEntryInvoicesReissue() {
     const data = await this.db('trabill_invoices')
       .withSchema(this.SINGLE)
       .select('*')
       .where({
         invoice_org_agency: 76,
-        invoice_category_id: 1,
-        invoice_is_reissued: 1,
-        invoice_is_deleted: 0,
-      });
+        invoice_category_id: 3,
+      })
+      .andWhere('invoice_is_deleted', 0);
 
-    const total = await this.db('trabill_invoices')
+    return { data };
+  }
+
+  public async singleEntryInvoicesReissueNew() {
+    return await this.db('trabill_invoices')
       .withSchema(this.SINGLE)
-      .count('* as count')
+      .select('*')
       .where({
         invoice_org_agency: 76,
-        invoice_category_id: 1,
-        invoice_is_reissued: 1,
         invoice_is_deleted: 0,
+        invoice_is_reissued: 0,
       })
-      .first()
-      .then((result: any) => result.count);
-
-    return {
-      data,
-      total,
-    };
+      .andWhere('invoice_category_id', '!=', 3);
   }
+
+  // public async singleEntryInvoicesReissue() {
+  //   const data = await this.db('v_all_inv')
+  //     .withSchema(this.SINGLE)
+  //     .select('*')
+  //     .where({
+  //       invoice_org_agency: 76,
+  //       invoice_category_id: 3,
+  //     });
+
+  //   const total = await this.db('trabill_invoices')
+  //     .withSchema(this.SINGLE)
+  //     .count('* as count')
+  //     .where({
+  //       invoice_org_agency: 76,
+  //       invoice_category_id: 1,
+  //       invoice_is_reissued: 1,
+  //       invoice_is_deleted: 0,
+  //     })
+  //     .first()
+  //     .then((result: any) => result.count);
+
+  //   return {
+  //     data,
+  //     total,
+  //   };
+  // }
 
   public async singleEntryInvoicesRefund() {
     return await this.db('trabill_invoices')
@@ -268,14 +378,115 @@ class ReissueModel extends Schema {
       .andWhere('airticket_is_void', 0);
     // .andWhere('airticket_is_deleted', 0);
   }
+
+  //previous
+  // public async singleEntryInvoicesAirTicketItemsReissue(invoice_id: number) {
+  //   return await this.db('trabill_invoice_reissue_airticket_items_view')
+  //     .withSchema('trabill_iata_single_entry_2025')
+  //     .select('*')
+  //     .where('airticket_org_agency', 76)
+  //     .andWhere('airticket_existing_invoiceid', invoice_id)
+  //     .andWhere('airticket_is_deleted', 0);
+  //   // .andWhere('airticket_ticket_type', 'NEW TKT');
+  // }
+
+  //current
+  // public async singleEntryInvoicesAirTicketItemsReissue(invoice_id: number) {
+  //   return await this.db('trabill_invoice_reissue_airticket_items')
+  //     .withSchema('trabill_iata_single_entry_2025')
+  //     .select([
+  //       'trabill_invoice_reissue_airticket_items.*',
+  //       'tiar.airoute_airticket_id',
+  //       'tiar.airoute_invoice_id',
+  //       this.db.raw(
+  //         'GROUP_CONCAT(tap.airline_iata_code SEPARATOR " - ") as airticket_routes'
+  //       ),
+  //     ])
+  //     .leftJoin(
+  //       'trabill_invoice_airticket_routes as tiar',
+  //       'tiar.airoute_airticket_id',
+  //       'trabill_invoice_reissue_airticket_items.airticket_id'
+  //     )
+  //     .leftJoin(
+  //       'trabill_airports as tap',
+  //       'tap.airline_id',
+  //       'tiar.airoute_route_sector_id'
+  //     )
+  //     .where('airticket_org_agency', 76)
+  //     .andWhere('airticket_invoice_id', invoice_id)
+  //     .andWhere('airticket_is_deleted', 0);
+  //   // .andWhere('airticket_ticket_type', 'NEW TKT');
+  // }
+
   public async singleEntryInvoicesAirTicketItemsReissue(invoice_id: number) {
-    return await this.db('trabill_invoice_reissue_airticket_items_view')
-      .withSchema('trabill_iata_single_entry_2025')
+    return await this.db('trabill_invoice_reissue_airticket_items as tiai')
+      .withSchema(this.SINGLE)
+      .select([
+        'tiai.*',
+        'tiar.airoute_airticket_id',
+        'tiar.airoute_invoice_id',
+        'iai.airticket_airline_id as new_airline_id',
+        this.db.raw(
+          'GROUP_CONCAT(tap.airline_iata_code SEPARATOR " - ") as airticket_routes'
+        ),
+      ])
+      .leftJoin(
+        'trabill_invoice_airticket_items as iai',
+        'iai.airticket_id',
+        'tiai.airticket_existing_airticket_id'
+      )
+      .leftJoin(
+        'trabill_invoice_airticket_routes as tiar',
+        'tiar.airoute_airticket_id',
+        'tiai.airticket_id'
+      )
+      //           .leftJoin(
+      //       'trabill_invoice_airticket_routes as tiar',
+      //       this.db.raw(`
+      //   CASE
+      //     WHEN iai.airticket_id IS NOT NULL THEN tiar.airoute_airticket_id = iai.airticket_id
+      //     ELSE tiar.airoute_airticket_id = tiai.airticket_id
+      //   END
+      // `)
+      //     )
+      .leftJoin(
+        'trabill_airports as tap',
+        'tap.airline_id',
+        'tiar.airoute_route_sector_id'
+      )
+
+      .where('tiai.airticket_org_agency', 76)
+      .andWhere('tiai.airticket_invoice_id', invoice_id)
+      .andWhere('tiai.airticket_is_deleted', 0)
+      .groupBy([
+        'tiar.airoute_invoice_id',
+        'tiar.airoute_airticket_id',
+        'tiai.airticket_id',
+        'iai.airticket_airline_id',
+        // 'tiai.airticket_ticket_type',
+        'tiai.airticket_sales_date',
+      ]);
+  }
+
+  public async getReissueItems(invoice_id: number) {
+    return await this.db('trabill_invoice_reissue_airticket_items as tiai')
+      .withSchema(this.SINGLE)
       .select('*')
-      .where('airticket_org_agency', 76)
-      .andWhere('airticket_existing_invoiceid', invoice_id)
-      .andWhere('airticket_is_deleted', 0);
-    // .andWhere('airticket_ticket_type', 'NEW TKT');
+      .leftJoin(
+        'trabill_invoices as ti',
+        'ti.invoice_id',
+        'tiai.airticket_invoice_id'
+      )
+      .where('airticket_is_deleted', 0)
+      // .andWhere('airticket_is_reissued', 0)
+      .andWhere('ti.invoice_id', invoice_id);
+  }
+
+  public async getVendorNameSingle(vendor_id: number) {
+    return await this.db('trabill_vendors')
+      .select('vendor_name')
+      .where('vendor_id', vendor_id)
+      .first();
   }
 
   /* update ******************************** */
@@ -699,7 +910,6 @@ class ReissueModel extends Schema {
         'comb_client',
         'client_name'
       )
-
       .leftJoin('v_all_clients', function () {
         this.on('v_all_clients.client_id', '=', 'airticket_client_id').orOn(
           'v_all_clients.combined_id',
@@ -716,6 +926,14 @@ class ReissueModel extends Schema {
         );
       })
 
+      .where('airticket_org_agency', 154)
+      .andWhere('airticket_ticket_no', airTicketId)
+      .first();
+  }
+  public async getAirTicketWiseInfoNew(airTicketId: string) {
+    return await this.db2('v_air_ticket_details')
+      .withSchema(this.DOUBLE)
+      .select('*')
       .where('airticket_org_agency', 154)
       .andWhere('airticket_ticket_no', airTicketId)
       .first();
@@ -759,3 +977,6 @@ class ReissueModel extends Schema {
 }
 
 export default ReissueModel;
+function leftJoin(arg0: string, arg1: string, arg2: string) {
+  throw new Error('Function not implemented.');
+}

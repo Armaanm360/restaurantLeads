@@ -77,7 +77,9 @@ export const airTicketPayloadFormatter = async (
       numRound(item.airticket_e5_charge);
 
     const countryTaxAit = totalCountryTax * 0.003;
-    const airticket_ait = item.airticket_gross_fare * 0.003 + countryTaxAit;
+    const airticket_ait = Math.round(
+      +item.airticket_gross_fare * 0.003 - countryTaxAit
+    );
 
     const airticket_net_commission =
       numRound(tkt_commission) - airticket_ait + (taxesCommission || 0);
@@ -106,7 +108,7 @@ export const airTicketPayloadFormatter = async (
       airticket_vendor_combine_id,
       airticket_remarks: item.airticket_remarks,
       airticket_airline_id: item.airticket_airline_id,
-      airticket_ticket_no: item.airticket_ticket_no,
+      airticket_ticket_no: item.ticket_no,
       airticket_pnr: item.airticket_pnr,
       airticket_classes: item.airticket_classes,
       airticket_gross_fare: item.airticket_gross_fare,
@@ -138,11 +140,14 @@ export const airTicketPayloadFormatter = async (
       airticket_p8_charge: item.airticket_p8_charge,
       airticket_r9_charge: item.airticket_r9_charge,
       airticket_sales_date: invoice_sales_date,
-      airticket_ticket_type: item.airticket_ticket_type,
+      airticket_ticket_type: item.airticket_ticket_type || 'NEW TKT',
       airticket_journey_date: item.airticket_journey_date,
       airticket_return_date: item.airticket_return_date,
-      airticket_route_or_sector: item.airticket_route_or_sector?.join(','),
+      airticket_route_or_sector: item.airticket_route_or_sector,
       airticket_vat: item?.airticket_vat,
+      airticket_is_reissued: item?.airticket_is_reissued,
+      airticket_is_refund: item?.airticket_is_refund,
+      airticket_is_void: item?.airticket_is_void,
     };
 
     const clTransPayload: any = {
@@ -287,8 +292,11 @@ export const airTicketNonCommissionPayloadFormatter = (body: any) => {
       airticket_airline_id: item.airticket_airline_id,
       airticket_ticket_no: item.airticket_ticket_no,
       airticket_pnr: item.airticket_pnr,
+      airticket_is_reissued: item?.airticket_is_reissued,
+      airticket_is_void: item?.airticket_is_void,
+      airticket_is_refund: item?.airticket_is_refund,
       airticket_classes: item.airticket_classes,
-      airticket_gross_fare: item.airticket_gross_fare,
+      // airticket_gross_fare: item.airticket_gross_fare,
       airticket_discount_total: item.airticket_discount_total,
       airticket_extra_fee: item.airticket_extra_fee,
       airticket_client_price: item.airticket_client_price,
@@ -301,7 +309,8 @@ export const airTicketNonCommissionPayloadFormatter = (body: any) => {
       airticket_ticket_type: item.airticket_ticket_type,
       airticket_journey_date: item.airticket_journey_date,
       airticket_return_date: item.airticket_return_date,
-      airticket_route_or_sector: item.airticket_route_or_sector?.join(','),
+      // airticket_route_or_sector: item.airticket_route_or_sector?.join(','),
+      airticket_route_or_sector: item.airticket_route_or_sector,
       airticket_pax_name: item.passport_name,
     };
 
@@ -429,8 +438,9 @@ export const invoiceReissueFormatter = (body: IAddReissueBody) => {
     const airTicketDetails: IReissueTicketItem = {
       airticket_id: item.airticket_id,
       airticket_is_deleted: item.isDeleted,
-      airticket_existing_invoice: item.existing_invoiceid,
-      airticket_existing_airticket_id: item.existing_airticket_id,
+      airticket_existing_invoice: item.double_entry_prev_invoice_id,
+      airticket_existing_airticket_id: item.double_entry_prev_airticket_id,
+      new_airticket_no: item.airticket_reissue_ticket_no,
       airticket_client_id: client_id,
       airticket_combined_id: combined_id,
       airticket_vendor_id,
@@ -445,6 +455,9 @@ export const invoiceReissueFormatter = (body: IAddReissueBody) => {
       airticket_ait: item.airticket_ait,
       airticket_tax_difference: item.airticket_tax_difference,
       airticket_commission_percent: item.airticket_commission_percent,
+
+      airticket_is_reissued: item.airticket_is_reissued,
+      airticket_is_void: item.airticket_is_void,
       airticket_commission_amount: numRound(tkt_commission),
       airticket_extra_fee: item.airticket_extra_fee,
       airticket_client_price: item.airticket_client_price,
@@ -454,7 +467,8 @@ export const invoiceReissueFormatter = (body: IAddReissueBody) => {
       airticket_sales_date: invoice_sales_date,
       airticket_journey_date: item.airticket_journey_date,
       airticket_return_date: item.airticket_return_date,
-      airticket_route_or_sector: item.airticket_route_or_sector?.join(','),
+      // airticket_route_or_sector: item.airticket_routes?.join(','),
+      airticket_route_or_sector: item.airticket_route_or_sector,
     };
 
     const clTransPayload: IClTrxnBody = {
